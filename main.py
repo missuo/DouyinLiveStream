@@ -70,7 +70,7 @@ def get_douyin_stream_data(url: str) -> Dict[str, Any]:
         return room_data
 
 
-def get_douyin_stream_url(json_data: dict, video_quality: str) -> dict:
+def get_douyin_stream_url(json_data: dict) -> dict:
     anchor_name = json_data.get("anchor_name", None)
 
     result = {
@@ -87,8 +87,9 @@ def get_douyin_stream_url(json_data: dict, video_quality: str) -> dict:
         quality_list: list = list(m3u8_url_list.keys())
         while len(quality_list) < 4:
             quality_list.append(quality_list[-1])
-        video_qualities = {"原画": 0, "蓝光": 0, "超清": 1, "高清": 2, "标清": 3}
-        quality_index = video_qualities.get(video_quality)
+        # video_qualities = {"原画": 0, "蓝光": 0, "超清": 1, "高清": 2, "标清": 3}
+        # quality_index = video_qualities.get(video_quality)
+        quality_index = 0
         quality_key = quality_list[quality_index]
         m3u8_url = m3u8_url_list.get(quality_key)
         flv_url = flv_url_list.get(quality_key)
@@ -166,7 +167,7 @@ def get_info(text: str):
     url = urls[0] if urls else None
     live_url = "https://live.douyin.com/" + get_live_url(url)
     json_data = get_douyin_stream_data(live_url)
-    port_info = get_douyin_stream_url(json_data, "原画")
+    port_info = get_douyin_stream_url(json_data)
     return port_info
     # print(port_info)
     # if port_info['is_live']:
@@ -189,8 +190,12 @@ def info():
     if url == None:
         abort(400)
     else:
-        info = get_info(url)
-        return jsonify(data=info, code=http.HTTPStatus.OK.value, message="success")
+        try:
+            info = get_info(url)
+            return jsonify(data=info, code=http.HTTPStatus.OK.value, message="success")
+        except Exception as e:
+            print(e)
+            abort(500)
 
 
 if __name__ == "__main__":
